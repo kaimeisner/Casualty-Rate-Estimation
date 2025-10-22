@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Military Combat Advantage Calculator</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+  <style>
+    body { padding: 2rem; }
+    #result { font-size: 2rem; font-weight: bold; color: #0066cc; }
+    .dropdown-item { cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="text-center mb-4">Combat Advantage Calculator</h1>
+    <p class="text-center text-muted">Select tactical parameters to compute the combat advantage score.</p>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label class="form-label">Tactical Operation</label>
+        <select id="tactical_operation" class="form-select">
+          <option value="offensive">Offensive</option>
+          <option value="stability">Stability</option>
+          <option value="sustainment">Sustainment</option>
+          <option value="counterinsurgency">Counterinsurgency</option>
+          <option value="defensive">Defensive</option>
+          <option value="peace_operations">Peace Operations</option>
+        </select>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Posture</label>
+        <select id="posture" class="form-select">
+          <option value="attacker">Attacker</option>
+          <option value="defender">Defender</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label class="form-label">Climate</label>
+        <select id="climate" class="form-select">
+          <option value="temperate">Temperate</option>
+          <option value="hot">Hot</option>
+          <option value="cold">Cold</option>
+        </select>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Terrain</label>
+        <select id="terrain" class="form-select">
+          <option value="urban">Urban</option>
+          <option value="rolling">Rolling</option>
+          <option value="flat">Flat</option>
+          <option value="swamp">Swamp</option>
+          <option value="rugged">Rugged</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label class="form-label">Enemy Capability</label>
+        <select id="enemy_capability" class="form-select">
+          <option value="near_peer">Near-Peer</option>
+          <option value="hybrid">Hybrid</option>
+          <option value="failed_state">Failed State</option>
+          <option value="asymmetric">Asymmetric</option>
+        </select>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Tactical Action</label>
+        <select id="tactical_action" class="form-select">
+          <!-- Defensive -->
+          <option value="blue_counterattack_heavy_resistance">Blue Counterattack (Heavy Resistance)</option>
+          <option value="red_attack">Red Attack</option>
+          <option value="blue_counterattack_light_resistance">Blue Counterattack (Light Resistance)</option>
+          <option value="patrolling">Patrolling</option>
+          <!-- Offensive -->
+          <option value="amphibious_assault">Amphibious Assault</option>
+          <option value="blue_attack_heavy_resistance">Blue Attack (Heavy Resistance)</option>
+          <option value="airdrop_attack">Airdrop Attack</option>
+          <option value="assault_river_crossing">Assault / River Crossing</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <label class="form-label">Operational Environment</label>
+        <select id="operational_environment" class="form-select">
+          <option value="close_area_near_peer">Close Area / Near-Peer</option>
+          <option value="close_area_hybrid">Close Area / Hybrid</option>
+          <option value="close_area_failed_state">Close Area / Failed State</option>
+          <option value="close_area_asymmetric">Close Area / Asymmetric</option>
+          <option value="support_area_forward_peer">Support Area Forward / Peer</option>
+          <option value="support_area_forward_hybrid">Support Area Forward / Hybrid</option>
+          <option value="support_area_forward_failed_state">Support Area Forward / Failed State</option>
+          <option value="support_area_forward_asymmetric">Support Area Forward / Asymmetric</option>
+          <option value="support_area_rear_peer">Support Area Rear / Peer</option>
+          <option value="support_area_rear_hybrid">Support Area Rear / Hybrid</option>
+          <option value="support_area_rear_failed_state">Support Area Rear / Failed State</option>
+          <option value="support_area_rear_asymmetric">Support Area Rear / Asymmetric</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="text-center mb-4">
+      <button id="calculate" class="btn btn-primary btn-lg">Calculate Combat Advantage</button>
+    </div>
+
+    <div class="text-center">
+      <h2>Result: <span id="result">--</span></h2>
+    </div>
+  </div>
+
+  <script>
+    // Define your Python dictionaries as strings (to be executed in Pyodide)
+    const pythonCode = `
+tactical_operation_dict = {
+    "offensive": 0,
+    "stability": -0.3832,
+    "sustainment": -0.4818,
+    "counterinsurgency": -0.5727,
+    "defensive": -1.0436,
+    "peace_operations": -3.0000
+}
+
+posture_dict = {
+    "attacker": 0,
+    "defender": 1.1864
+}
+
+climate_dict = {
+    "temperate": 0,
+    "hot": -0.0072,
+    "cold": -0.3233
+}
+
+terrain_dict = {
+    "urban": 0,
+    "rolling": -0.0060,
+    "flat": -0.1289,
+    "swamp": -0.3504,
+    "rugged": -0.4060
+}
+
+enemy_capability_dict = {
+    "near_peer": 0,
+    "hybrid": -0.2095,
+    "failed_state": -0.7422,
+    "asymmetric": -0.7422
+}
+
+tactical_action_dict = {
+    "blue_counterattack_heavy_resistance": 1.651,
+    "red_attack": 1.463,
+    "blue_counterattack_light_resistance": 0.979,
+    "patrolling": 0.603,
+    "amphibious_assault": 2.582,
+    "blue_attack_heavy_resistance": 2.278,
+    "airdrop_attack": 1.912,
+    "assault_river_crossing": 1.610
+}
+
+operational_environment_dict = {
+    "close_area_near_peer": 1,
+    "close_area_hybrid": 1,
+    "close_area_failed_state": 1,
+    "close_area_asymmetric": 1,
+    "support_area_forward_peer": 0.188,
+    "support_area_forward_hybrid": 0.209,
+    "support_area_forward_failed_state": 0.257,
+    "support_area_forward_asymmetric": 0.459,
+    "support_area_rear_peer": 0.070,
+    "support_area_rear_hybrid": 0.090,
+    "support_area_rear_failed_state": 0.135,
+    "support_area_rear_asymmetric": 0.310
+}
+
+def calculate_combat_advantage(tactical_op, posture, climate, terrain, enemy_cap, tactical_act, op_env):
+    score = 0.0
+    score += tactical_operation_dict.get(tactical_op, 0)
+    score += posture_dict.get(posture, 0)
+    score += climate_dict.get(climate, 0)
+    score += terrain_dict.get(terrain, 0)
+    score += enemy_capability_dict.get(enemy_cap, 0)
+    score += tactical_action_dict.get(tactical_act, 0)
+    score += operational_environment_dict.get(op_env, 0)
+    return score
+`;
+
+    // Initialize Pyodide when page loads
+    async function initPyodide() {
+      const pyodide = await loadPyodide();
+      await pyodide.loadPackage(["micropip"]);
+      pyodide.runPython(pythonCode);
+      return pyodide;
+    }
+
+    // When button is clicked
+    document.getElementById("calculate").addEventListener("click", async () => {
+      const pyodide = await initPyodide();
+
+      // Get dropdown values
+      const tactical_op = document.getElementById("tactical_operation").value;
+      const posture = document.getElementById("posture").value;
+      const climate = document.getElementById("climate").value;
+      const terrain = document.getElementById("terrain").value;
+      const enemy_cap = document.getElementById("enemy_capability").value;
+      const tactical_act = document.getElementById("tactical_action").value;
+      const op_env = document.getElementById("operational_environment").value;
+
+      // Call Python function
+      const result = pyodide.runPython(`
+        calculate_combat_advantage(
+          "${tactical_op}",
+          "${posture}",
+          "${climate}",
+          "${terrain}",
+          "${enemy_cap}",
+          "${tactical_act}",
+          "${op_env}"
+        )
+      `);
+
+      // Display result
+      document.getElementById("result").textContent = result.toFixed(4);
+    });
+
+    // Initialize on load
+    initPyodide().catch(console.error);
+  </script>
+</body>
+</html>
