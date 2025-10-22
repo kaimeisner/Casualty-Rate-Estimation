@@ -114,10 +114,10 @@
       </div>
     </div>
     <div class="text-center mb-4">
-      <button id="calculate" class="btn btn-primary btn-lg">Calculate Casualty Estimation</button>
+      <button id="calculate" class="btn btn-primary btn-lg">Calculate Daily Mean WIA Rate</button>
     </div>
     <div class="text-center">
-      <h2>Result: <span id="result">--</span></h2>
+      <h2>Result: <span id="result">--</span>%</h2>
     </div>
   </div>
 
@@ -273,7 +273,7 @@
       const logPar = par > 0 ? Math.log(par) : 0;
       const logDuration = durationDays > 0 ? Math.log(durationDays) : 0;
       
-      return intercept + 
+	  const res = intercept + 
              (-0.1577) * logPar + 
              (-0.4630) * logDuration +
              (tacticalOperationDict[tacticalOperation] || 0) +
@@ -281,14 +281,17 @@
              (climateDict[climate] || 0) +
              (terrainDict[terrain] || 0) +
              (enemyCapabilityDict[enemyCapability] || 0);
+	 	  
+      return res
     }
 
     // Calculate mean WIA 
     function getMeanWia(par, durationDays, tacticalOperation, posture, climate, terrain, enemyCapability, tacticalAction, operationalEnvironment, intercept = 4.0986, combatAdvantage = "neutral") {
       // Calculate base mean
       const lnWia = getLnWia(par, durationDays, tacticalOperation, posture, climate, terrain, enemyCapability, intercept);
+	  
       let mean = Math.exp(lnWia);
-      
+	  
       // Apply tactical action multiplier
       const tacticalMultiplier = tacticalActionDict[tacticalAction] || 1;
       mean *= tacticalMultiplier;
@@ -296,22 +299,31 @@
       // Apply operational environment multiplier
       const opEnvMultiplier = operationalEnvironmentDict[operationalEnvironment] || 1;
       mean *= opEnvMultiplier;
-      
+	  console.log(mean);
       // Apply combat advantage adjustment
       switch (combatAdvantage) {
         case "neutral":
-          return mean;
+		  break; 
         case "blue_advantage_near_peer":
-          return exponentialPercentile(mean, 0.5);
+          mean = exponentialPercentile(mean, 0.5);
+		  break; 
         case "blue_advantage_other":
-          return gammaPercentile(mean, 0.5);
+          mean = gammaPercentile(mean, 0.5);
+		  break;
         case "red_advantage_near_peer":
-          return exponentialPercentile(mean, 0.8);
+          mean = exponentialPercentile(mean, 0.8);
+		  break; 
         case "red_advantage_other":
-          return exponentialPercentile(mean, 0.8);
+          mean = exponentialPercentile(mean, 0.8);
+		  break;
         default:
-          return mean;
+          break;  
       }
+	  
+	  // Round mean
+	  console.log(mean);
+	  mean = Math.round(mean * 10) / 10;
+	  return mean;
     }
 
     // Initialize on page load
@@ -334,7 +346,7 @@
         // Calculate result
         try {
           const result = getMeanWia(par, durationDays, tacticalOperation, posture, climate, terrain, enemyCapability, tacticalAction, operationalEnvironment, 4.0986, combatAdvantage);
-          document.getElementById("result").textContent = result.toFixed(4);
+          document.getElementById("result").textContent = result.toFixed(1);
         } catch (error) {
           document.getElementById("result").textContent = "Error: " + error.message;
         }
