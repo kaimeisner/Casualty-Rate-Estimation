@@ -13,11 +13,12 @@
 </head>
 <body>
   <div class="container">
-    <h1 class="text-center mb-4">Combat Advantage Calculator</h1>
-    <p class="text-center text-muted">Select tactical parameters to compute the combat advantage score.</p>
+    <h1 class="text-center mb-4">Casualty Estimation Calculator</h1>
+	<p class="text-center text-muted">The model is based on Edwin D’Souza et al.: Forecasting Wounded-In-Action Casualty Rates for Ground Combat Operations (2019).</p>
+    <p class="text-center text-muted">Select tactical parameters to compute the casualty estimation.</p>
     <div class="row mb-3">
       <div class="col-md-6">
-        <label class="form-label">PAR (Parameter Adjustment Rating)</label>
+        <label class="form-label">Population at Risk</label>
         <input type="number" id="par" class="form-control" step="1" value="1000" min="0" max="100000000000000000"
                title="Adjustment factor for mission-specific variables (e.g., intel quality, morale)">
       </div>
@@ -121,9 +122,6 @@
   </div>
 
   <script>
-    // JavaScript implementation of all Python logic
-
-    // Dictionaries (equivalent to Python dicts)
     const tacticalOperationDict = {
       "offensive": 0,
       "stability": -0.3832,
@@ -195,7 +193,6 @@
       "red_advantage_other": "red_advantage_other"
     };
 
-    // Helper functions to replicate Python's math functions
     function exponentialPercentile(mean, p) {
       if (p < 0 || p > 1) throw new Error("p must be between 0 and 1");
       if (mean <= 0) throw new Error("mean must be positive");
@@ -204,7 +201,6 @@
 
     // Gamma distribution percentile using approximation (since we don't have scipy)
     // We'll use a simple approximation for shape=1 (which is exponential) and a reasonable approximation for other shapes
-    // In your Python code, gamma_percentile was called with shape=1, so we can use exponentialPercentile for that case
     function gammaPercentile(mean, p, shape = 1) {
       if (p < 0 || p > 1) throw new Error("p must be between 0 and 1");
       if (mean <= 0) throw new Error("mean must be positive");
@@ -272,7 +268,7 @@
       }
     }
 
-    // Calculate ln(WIA) - equivalent to get_ln_wia
+    // Calculate ln(WIA) 
     function getLnWia(par, durationDays, tacticalOperation, posture, climate, terrain, enemyCapability, intercept = 4.0986) {
       const logPar = par > 0 ? Math.log(par) : 0;
       const logDuration = durationDays > 0 ? Math.log(durationDays) : 0;
@@ -287,7 +283,7 @@
              (enemyCapabilityDict[enemyCapability] || 0);
     }
 
-    // Calculate mean WIA - equivalent to get_mean_wia
+    // Calculate mean WIA 
     function getMeanWia(par, durationDays, tacticalOperation, posture, climate, terrain, enemyCapability, tacticalAction, operationalEnvironment, intercept = 4.0986, combatAdvantage = "neutral") {
       // Calculate base mean
       const lnWia = getLnWia(par, durationDays, tacticalOperation, posture, climate, terrain, enemyCapability, intercept);
@@ -333,8 +329,6 @@
         const tacticalAction = document.getElementById("tactical_action").value;
         const operationalEnvironment = document.getElementById("operational_environment").value;
         
-        // Default combat advantage - in your Python code this was hardcoded as "neutral"
-        // But since it wasn't being set from UI, we'll use "neutral" as default
         const combatAdvantage = "neutral";
         
         // Calculate result
