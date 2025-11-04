@@ -83,7 +83,7 @@
         <select id="tactical_action" class="form-select">
           <!-- Defensive -->
           <option value="blue_counterattack_heavy_resistance">Defensive: Blue Counterattack (Heavy Resistance)</option>
-          <option value="red_attack" selected>Defensive: Red Attack</option>
+          <option value="defensive_red_attack" selected>Defensive: Defense, Red Attack</option>
           <option value="blue_counterattack_light_resistance">Defensive: Blue Counterattack (Light Resistance)</option>
           <option value="patrolling">Defensive: Patrolling</option>
           <!-- Offensive -->
@@ -91,7 +91,12 @@
           <option value="blue_attack_heavy_resistance">Offensive: Blue Attack (Heavy Resistance)</option>
           <option value="airdrop_attack">Offensive: Airdrop Attack</option>
           <option value="assault_river_crossing">Offensive: Assault / River Crossing</option>
-        </select>
+		  <option value="offensive_red_attack">Offensive: Defense, Red Attack</option>
+		  <option value="blue_attack_light_resistance">Offensive: Blue Attack (Light Resistance)</option>
+		  <option value="mopping_up">Offensive: Mopping Up</option>
+		  <option value="offensive_patrolling">Offensive: Patrolling</option>
+		
+		</select>
       </div>
     </div>
     <div class="row mb-4">
@@ -160,14 +165,18 @@
     const tacticalActionDict = {
       // Defensive
       "blue_counterattack_heavy_resistance": 1.651,
-      "red_attack": 1.463,
+      "defensive_red_attack": 1.463,
       "blue_counterattack_light_resistance": 0.979,
-      "patrolling": 0.603,
+      "defensive_patrolling": 0.603,
       // Offensive
       "amphibious_assault": 2.582,
       "blue_attack_heavy_resistance": 2.278,
       "airdrop_attack": 1.912,
-      "assault_river_crossing": 1.610
+      "assault_river_crossing": 1.610,
+	  "offensive_red_attack": 1.609,
+	  "blue_attack_light_resistance": 0.942,
+	  "mopping_up": 0.887,
+	  "offensive_patrolling": 0.474
     };
 
     const operationalEnvironmentDict = {
